@@ -1,13 +1,15 @@
 let tareasArray = [];
+let metasArray = [];
 let taskIdCounter = 1;
+let goalIdCounter = 1;
+let isSubmitEventBoundTareas = false;
+let isSubmitEventBoundMetas = false;
 
 const darValores = () => {
   const formulario = document.getElementById("form");
   const titulo = document.getElementById("title");
   const descripcion = document.getElementById("description");
   const fecha = document.getElementById("date");
-
-  let isSubmitEventBound = false;
 
   const agregarTarea = (event) => {
     event.preventDefault();
@@ -27,12 +29,41 @@ const darValores = () => {
     console.log(`Tarea agregada con id ${taskIdCounter - 1}`, tareasArray);
   };
 
-  if (!isSubmitEventBound) {
+  if (!isSubmitEventBoundTareas) {
     formulario.addEventListener("submit", agregarTarea);
-    isSubmitEventBound = true;
+    isSubmitEventBoundTareas = true;
   }
-
   tareasVacio();
+};
+
+const darValoresMeta = () => {
+
+  const formulario = document.getElementById("form-metas");
+  const tituloMeta = document.getElementById("title-meta");
+  const descripcion = document.getElementById("description-meta");
+  const fecha = document.getElementById("date-meta");
+
+  const agregarMeta = (event) => {
+    event.preventDefault();
+    metasArray.push({
+      id: goalIdCounter++,
+      titulo: tituloMeta.value,
+      descripcion: descripcion.value,
+      fecha: fecha.value,
+    });
+
+    tituloMeta.value = "";
+    descripcion.value = "";
+    fecha.value = "";
+    vistaMetas();
+    console.log(`Meta agregada con id ${goalIdCounter - 1}`, metasArray);
+  }; 
+  if (!isSubmitEventBoundMetas) {
+    formulario.addEventListener("submit", agregarMeta);
+    isSubmitEventBoundMetas = true;
+  }
+  metasVacio();
+  
 };
 
 const vistaTareas = () => {
@@ -118,21 +149,6 @@ const eventoTarea = () => {
   });
 };
 
-const eventoCheckbox = () => {
-  const checkboxes = document.getElementsByName("tarea");
-  checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener("change", actualizarContador);
-  });
-};
-
-const actualizarContador = () => {
-  const checkboxes = document.getElementsByName("tarea");
-  let checkedCount = Array.from(checkboxes).filter(
-    (checkbox) => checkbox.checked
-  ).length;
-  document.getElementById("eliminar").innerText = `Eliminar (${checkedCount})`;
-};
-
 const eventoEstado = (index) => {
   const selectEstado = document.getElementById(`status${index}`);
   if (selectEstado) {
@@ -146,49 +162,100 @@ const eventoEstado = (index) => {
   }
 };
 
-const eventoEliminar = () => {
-  let botonEliminar = document.getElementById("eliminar");
-  botonEliminar.addEventListener("click", eliminarTareasSeleccionadas);
+const metasVacio = () => {
+  const metas = document.getElementById("espacio-metas");
+  metas.innerHTML = "";
+  if (metasArray.length == 0) {
+    const mensaje = document.createElement("div");
+    mensaje.innerHTML = `
+      <div class="metas-vacio">
+        <p>
+        No hay metas por hacer :)
+        <br>
+        Aquí van tus metas. ¡Agrega una!
+        </p>
+      </div>
+    `;
+    metas.appendChild(mensaje);
+  }
 };
 
-const eliminarTareasSeleccionadas = () => {
-  const checkboxes = document.getElementsByName("tarea");
-  let indicesParaEliminar = [];
-  checkboxes.forEach((checkbox, index) => {
-    if (checkbox.checked) {
-      indicesParaEliminar.push(index);
-    }
-    console.log("Tareas después de eliminar", tareasArray);
+const vistaMetas = () => {
+  const metas = document.getElementById("espacio-metas");
+  metas.innerHTML = "";
+  metasArray.forEach((meta, index) => {
+    const metaDiv = document.createElement("div");
+    metaDiv.classList.add("meta");
+    metaDiv.innerHTML = `
+    <div id="meta${index}" class="meta">
+      <div class="labels-meta">
+      <ul>
+        <li>
+          <button class="botonMeta" name="botonMeta" onclick="eventoMeta()">${meta.titulo}</button>
+        </li>
+      </ul>
+      </div>
+    </div>
+    `;
+    metas.appendChild(metaDiv);
+    crearPopUpMetas(meta, index);
+    eventoMeta();
   });
-
-  for (let i = indicesParaEliminar.length - 1; i >= 0; i--) {
-    let index = indicesParaEliminar[i];
-    checkboxes[index].closest("div").remove();
-    tareasArray.splice(index, 1);
-  }
-
-  actualizarContador();
-  if (tareasArray.length === 0) {
-    document.getElementById("boton-eliminar").remove();
-  }
 };
+
+const eventoMeta = () => {
+  const botonMeta = document.getElementsByName("botonMeta");
+  botonMeta.forEach((boton, index) => {
+    boton.addEventListener("click" , () => {
+      const popup = popupsPorMeta[index];
+      document.getElementById("espacio-metas").appendChild(popup);
+      document.body.classList.add("showMeta");
+    });
+  });
+};
+
+const popupsPorMeta = {};
+
+const crearPopUpMetas = (meta, index) => {
+  const metaPopUp = document.createElement("div");
+  metaPopUp.classList.add("meta-popup");
+  metaPopUp.innerHTML = `
+    <div class="meta-popup-content" id="meta-popup${index}">
+      <div class="popup-meta-close" onclick="closeMeta()">&times;</div>
+      <h2>${meta.titulo}</h2>
+      <p>${meta.descripcion}</p>
+      <p>${meta.fecha}</p>
+    </div>`;
+  popupsPorMeta[index] = metaPopUp;
+};
+
 
 const openForm = () => {
   document.body.classList.add("showForm");
+  document.body.classList.remove("showFormMeta");
 };
 
 const closeForm = () => {
   document.body.classList.remove("showForm");
 };
 
-const openTarea = () => {
-  document.body.classList.add("showTarea");
-};
-
 const closeTarea = () => {
   document.body.classList.remove("showTarea");
 };
 
+const openFormMeta = () => {
+  document.body.classList.add("showFormMeta");
+}
+
+const closeFormMeta = () => {
+  document.body.classList.remove("showFormMeta");
+}
+
+const closeMeta = () => {
+  document.body.classList.remove("showMeta");
+};
+
 document.addEventListener("DOMContentLoaded", (event) => {
   darValores();
+  darValoresMeta();
 });
