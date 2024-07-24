@@ -83,6 +83,12 @@ body .principal .metas-cumplir .espacio-metas{
     background-color: white;
 }
 
+body .metas-vacio{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
 body .principal .metas-cumplir .espacio-metas .metas{
     display: flex;
     justify-content: space-between;
