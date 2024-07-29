@@ -13,20 +13,25 @@ const darValores = () => {
 
   const agregarTarea = (event) => {
     event.preventDefault();
-    tareasArray.push({
+
+    const tarea = {
       id: taskIdCounter++,
       titulo: titulo.value,
       descripcion: descripcion.value,
       fecha: fecha.value,
       estado: "pendiente",
-    });
+    };
+
+    tareasArray.push(tarea);
+
+
 
     titulo.value = "";
     descripcion.value = "";
     fecha.value = "";
 
     vistaTareas();
-    console.log(`Tarea agregada con id ${taskIdCounter - 1}`, tareasArray);
+    enviarTarea(tarea);
   };
 
   if (!isSubmitEventBoundTareas) {
@@ -34,6 +39,24 @@ const darValores = () => {
     isSubmitEventBoundTareas = true;
   }
   tareasVacio();
+  
+};
+
+const enviarTarea = (tarea) => {
+  fetch("/api/tareas", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tarea),
+  })
+  .then((response) => response.json())
+  .then((data) => {
+    console.log("Envío exitoso", data);
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });  
 };
 
 const darValoresMeta = () => {
