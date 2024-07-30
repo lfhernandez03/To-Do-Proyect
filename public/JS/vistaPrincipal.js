@@ -15,7 +15,6 @@ const darValores = () => {
     event.preventDefault();
 
     const tarea = {
-      id: taskIdCounter++,
       titulo: titulo.value,
       descripcion: descripcion.value,
       fecha: fecha.value,
@@ -23,8 +22,6 @@ const darValores = () => {
     };
 
     tareasArray.push(tarea);
-
-
 
     titulo.value = "";
     descripcion.value = "";
@@ -39,28 +36,89 @@ const darValores = () => {
     isSubmitEventBoundTareas = true;
   }
   tareasVacio();
-  
 };
 
 const enviarTarea = (tarea) => {
-  fetch("/api/tareas", {
+  fetch("/api/tareas/crear", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(tarea),
   })
-  .then((response) => response.json())
-  .then((data) => {
-    console.log("Envío exitoso", data);
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Envío exitoso", data);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+};
+
+const recibirTareas = () => {
+  fetch("/api/tareas/obtener", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
   })
-  .catch((error) => {
-    console.error("Error:", error);
-  });  
+    .then((response) => response.json())
+    .then((data) => {
+      tareasArray = data.map((tarea) => ({
+        id_tarea: tarea.id_tarea,
+        titulo: tarea.titulo,
+        descripcion: tarea.descripcion,
+        fecha: tarea.fecha,
+        estado: tarea.estado,
+      }));
+      vistaTareas();
+      console.log("Tareas recibidas", data);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+};
+
+const actualizarTareas = (tareaActualizada) => {
+  console.log("Actualizando tarea:", tareaActualizada); // Log the task being updated
+  fetch(`/api/tareas/actualizar/${tareaActualizada.id_tarea}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tareaActualizada),
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al actualizar tarea");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Tarea actualizada", data);
+      const index = tareasArray.findIndex(
+        (tarea) => tarea.id_tarea === data.id_tarea
+      );
+      if (index !== -1) {
+        tareasArray[index] = data;
+        vistaTareas(); // Actualizar la vista después de la actualización
+      } else {
+        console.error("No se encontró la tarea en el array local");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+};
+
+const realizarCambiosEnTareas = () => {
+  tareasArray.forEach((tarea) => {
+    actualizarTareas(tarea);
+  });
 };
 
 const darValoresMeta = () => {
-
   const formulario = document.getElementById("form-metas");
   const tituloMeta = document.getElementById("title-meta");
   const descripcion = document.getElementById("description-meta");
@@ -80,13 +138,12 @@ const darValoresMeta = () => {
     fecha.value = "";
     vistaMetas();
     console.log(`Meta agregada con id ${goalIdCounter - 1}`, metasArray);
-  }; 
+  };
   if (!isSubmitEventBoundMetas) {
     formulario.addEventListener("submit", agregarMeta);
     isSubmitEventBoundMetas = true;
   }
   metasVacio();
-  
 };
 
 const vistaTareas = () => {
@@ -100,7 +157,9 @@ const vistaTareas = () => {
       <div class="labels-tarea">
       <ul>
         <li>
-          <button name="botonTarea" onclick="eventoTarea()">${tarea.titulo}</button>
+          <button name="botonTarea" onclick="eventoTarea()">${
+            tarea.titulo
+          }</button>
         </li>
       </ul>
       </div>
@@ -119,7 +178,7 @@ const vistaTareas = () => {
       </div>
     </div>
     `;
-    
+
     tareas.appendChild(tareaDiv);
     eventoEstado(index);
     crearPopUpParaTarea(tarea, index);
@@ -164,7 +223,7 @@ const crearPopUpParaTarea = (tarea, index) => {
 const eventoTarea = () => {
   const botonTarea = document.getElementsByName("botonTarea");
   botonTarea.forEach((boton, index) => {
-    boton.addEventListener("click" , () => {
+    boton.addEventListener("click", () => {
       const popup = popupsPorTarea[index];
       document.getElementById("espacio-tareas").appendChild(popup);
       document.body.classList.add("showTarea");
@@ -179,6 +238,7 @@ const eventoEstado = (index) => {
       const nuevoEstado = event.target.value;
       tareasArray[index].estado = nuevoEstado;
       console.log("Tareas después de cambiar estado", tareasArray);
+      actualizarTareas(tareasArray[index]);
     });
   } else {
     console.error(`El elemento select con ID status${index} no se encontró.`);
@@ -229,7 +289,7 @@ const vistaMetas = () => {
 const eventoMeta = () => {
   const botonMeta = document.getElementsByName("botonMeta");
   botonMeta.forEach((boton, index) => {
-    boton.addEventListener("click" , () => {
+    boton.addEventListener("click", () => {
       const popup = popupsPorMeta[index];
       document.getElementById("espacio-metas").appendChild(popup);
       document.body.classList.add("showMeta");
@@ -252,7 +312,6 @@ const crearPopUpMetas = (meta, index) => {
   popupsPorMeta[index] = metaPopUp;
 };
 
-
 const openForm = () => {
   document.body.classList.add("showForm");
   document.body.classList.remove("showFormMeta");
@@ -268,11 +327,11 @@ const closeTarea = () => {
 
 const openFormMeta = () => {
   document.body.classList.add("showFormMeta");
-}
+};
 
 const closeFormMeta = () => {
   document.body.classList.remove("showFormMeta");
-}
+};
 
 const closeMeta = () => {
   document.body.classList.remove("showMeta");
@@ -281,4 +340,5 @@ const closeMeta = () => {
 document.addEventListener("DOMContentLoaded", (event) => {
   darValores();
   darValoresMeta();
+  recibirTareas();
 });

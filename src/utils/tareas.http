@@ -1,0 +1,6 @@
+
+//
+POST /api/tareas/obtener
+{
+    "id_tarea": 1
+}
