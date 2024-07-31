@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import indexRoutes from './indexRoutes.js';
 import tareas from './tareas.js';
 import { putTareas } from '../utils/tareasDB.js';
+import metas from './metas.js';
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +23,11 @@ app.use('/', indexRoutes);
 app.use('/api/tareas/crear', tareas);
 app.use('/api/tareas/obtener', tareas);
 app.use('/api/tareas/actualizar/:id_tarea', putTareas);
+
+
+// Usar las rutas definidas en src/routes/metas.js
+app.use('/api/metas/crear', metas);
+app.use('/api/metas/obtener', metas);
 
 // Middleware para manejar errores 404
 app.use((req, res) => {
