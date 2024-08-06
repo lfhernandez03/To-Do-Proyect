@@ -396,6 +396,17 @@ const crearPopUpMetas = (meta, index) => {
   popupsPorMeta[index] = metaPopUp;
 };
 
+//ENCABEZADO
+
+const fechaEncabezado = () => {
+  const fecha = document.getElementById("fecha-encabezado");
+  const date = new Date();
+  const fechaActual = date.getDate()  + "-" + (date.getMonth() + 1) + "-" + date.getFullYear() ;
+  fecha.innerHTML = `
+    <h2> Fecha: ${fechaActual}</h2>`;
+
+}
+
 const openForm = () => {
   document.body.classList.add("showForm");
   document.body.classList.remove("showFormMeta");
@@ -426,4 +437,5 @@ document.addEventListener("DOMContentLoaded", (event) => {
   darValoresMeta();
   recibirTareas();
   recibirMetas();
+  fechaEncabezado();
 });

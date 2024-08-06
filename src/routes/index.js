@@ -5,6 +5,7 @@ import indexRoutes from './indexRoutes.js';
 import tareas from './tareas.js';
 import { putTareas } from '../utils/tareasDB.js';
 import metas from './metas.js';
+import registro from './registro.js';
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,6 +29,9 @@ app.use('/api/tareas/actualizar/:id_tarea', putTareas);
 // Usar las rutas definidas en src/routes/metas.js
 app.use('/api/metas/crear', metas);
 app.use('/api/metas/obtener', metas);
+
+// Usar las rutas definidas en src/routes/registro.js
+app.use('/api/registro', registro);
 
 // Middleware para manejar errores 404
 app.use((req, res) => {
